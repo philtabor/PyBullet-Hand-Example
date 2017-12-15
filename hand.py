@@ -20,6 +20,9 @@ p.changeConstraint(hand_cid,(hand_po[0][0],hand_po[0][1],hand_po[0][2]),ho, maxF
 
 p.setRealTimeSimulation(0)
 
+# need this to keep the hand from rotating when you move it up and down.
+p.changeDynamics(hand, linkIndex=-1, angularDamping=100.0)
+
 # Curl up the digits to make a pointing gesture. To remove other fingers from the equation
 joint7Pos = p.getJointState(hand, 7)[0]
 joint24Pos = p.getJointState(hand, 24)[0]
@@ -74,9 +77,6 @@ while (1):
 
     for k in key.keys():
         hand_po = p.getBasePositionAndOrientation(hand)
-        
-        # need this to keep the hand from rotating when you move it up and down.
-        p.changeDynamics(hand, linkIndex=-1, angularDamping=35.0)
 
         if k == 48: #down - 0 key on keyboard
             p.changeConstraint(hand_cid,(hand_po[0][0]+move,hand_po[0][1],hand_po[0][2]),ho, maxForce=50)
