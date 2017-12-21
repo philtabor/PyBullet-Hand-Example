@@ -3,25 +3,29 @@ p.connect(p.GUI)
 
 obj_to_classify = p.loadURDF("loader.stl.urdf",(0,-1,0), useFixedBase=1)
 
-move = 0.001
-
+# 0.004166666666666667 default fixed timestep
+# strong coupling between the time step, move parameter, and the tiny force applied in collisions
+# the following parameters were found by trial and error. 
+# move=0.0002, fixedTimeStep=0.05, tinyForce=1.5*10e-7
+timeStep = 0.12
+move = 0.01#0.00035
+tinyForce= 2*10e-7
+p.setPhysicsEngineParameter(fixedTimeStep=timeStep)
 p.setGravity(0,0,0)
 
-objects = p.loadMJCF("MPL.xml",flags=0)
+objects = p.loadMJCF("MPL.xml", flags=0)
 hand=objects[0]  #1 total
+
 obj_po = p.getBasePositionAndOrientation(obj_to_classify)
 hand_cid = p.createConstraint(hand,-1,-1,-1,p.JOINT_FIXED,[0,0,0],[0,0,0],[0,0,0])
 
 hand_po = p.getBasePositionAndOrientation(hand)
 ho = p.getQuaternionFromEuler([0.0, 0.0, 0.0])
-pi = 3.14159
+p.changeDynamics(hand, linkIndex=-1, angularDamping=0.5)
 # keeps it from moving back go origin
 p.changeConstraint(hand_cid,(hand_po[0][0],hand_po[0][1],hand_po[0][2]),ho, maxForce=200)
-
+pi = 3.14159
 p.setRealTimeSimulation(0)
-
-# need this to keep the hand from rotating when you move it up and down.
-p.changeDynamics(hand, linkIndex=-1, angularDamping=100.0)
 
 # Curl up the digits to make a pointing gesture. To remove other fingers from the equation
 joint7Pos = p.getJointState(hand, 7)[0]
@@ -40,9 +44,6 @@ joint32tgt, joint34tgt, joint36tgt = pi/2.5, pi/2, pi/2
 
 # pinky
 joint40tgt, joint42tgt, joint44tgt = pi/3, pi/2, pi/2 
-
-indexEndID = 21
-offset = 0.02
 
 #This is to curl the hand into a pointing gesture
 while (joint7Pos < joint7tgt) and (joint24Pos < joint24tgt) and (joint32Pos < joint32tgt) and (joint40Pos < joint40tgt):
@@ -74,23 +75,21 @@ while (joint7Pos < joint7tgt) and (joint24Pos < joint24tgt) and (joint32Pos < jo
 # Main loop for controlling the hand
 while (1):
     key = p.getKeyboardEvents()
-
     for k in key.keys():
         hand_po = p.getBasePositionAndOrientation(hand)
-
         if k == 48: #down - 0 key on keyboard
-            p.changeConstraint(hand_cid,(hand_po[0][0]+move,hand_po[0][1],hand_po[0][2]),ho, maxForce=50)
+            p.changeConstraint(hand_cid,(hand_po[0][0]+move,hand_po[0][1],hand_po[0][2]),ho, maxForce=tinyForce)
         elif k == 49: #up   1 key         
-            p.changeConstraint(hand_cid,(hand_po[0][0]-move,hand_po[0][1],hand_po[0][2]),ho, maxForce=50)
+            p.changeConstraint(hand_cid,(hand_po[0][0]-move,hand_po[0][1],hand_po[0][2]),ho, maxForce=tinyForce)
         elif k == 50: #left 2 key           
-            p.changeConstraint(hand_cid,(hand_po[0][0],hand_po[0][1]+move,hand_po[0][2]),ho, maxForce=50)
+            p.changeConstraint(hand_cid,(hand_po[0][0],hand_po[0][1]+move,hand_po[0][2]),ho, maxForce=tinyForce)
         elif k == 51: #right 3 key           
-            p.changeConstraint(hand_cid,(hand_po[0][0],hand_po[0][1]-move,hand_po[0][2]),ho, maxForce=50)
+            p.changeConstraint(hand_cid,(hand_po[0][0],hand_po[0][1]-move,hand_po[0][2]),ho, maxForce=tinyForce)
         elif k == 52: #< 4 key       
-            p.changeConstraint(hand_cid,(hand_po[0][0],hand_po[0][1],hand_po[0][2]+move), ho, maxForce=50)            
+            p.changeConstraint(hand_cid,(hand_po[0][0],hand_po[0][1],hand_po[0][2]+move),ho, maxForce=tinyForce)            
         elif k == 53: #> 5 key           
-            p.changeConstraint(hand_cid,(hand_po[0][0],hand_po[0][1],hand_po[0][2]-move), ho, maxForce=50)
-  
+            p.changeConstraint(hand_cid,(hand_po[0][0],hand_po[0][1],hand_po[0][2]-move),ho, maxForce=tinyForce)
+
     p.stepSimulation()  
 
 p.disconnect()
