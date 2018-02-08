@@ -60,12 +60,12 @@ def step(action):
             z -= move
 
         elif action == 6: # move finger
-            joint1Pos = pb.getJointState(agent_mb, 0)[0]
+            joint1Pos = pb.getJointState(agent_mb, 1)[0]
             newJoint1Pos = joint1Pos - 0.1
             pb.setJointMotorControl2(agent_mb,1,pb.POSITION_CONTROL,newJoint1Pos)
 
         elif action == 7: # move finger
-            joint1Pos = pb.getJointState(agent_mb, 0)[0]
+            joint1Pos = pb.getJointState(agent_mb, 1)[0]
             newJoint1Pos = joint1Pos + 0.1
             pb.setJointMotorControl2(agent_mb,1,pb.POSITION_CONTROL,newJoint1Pos)
 
